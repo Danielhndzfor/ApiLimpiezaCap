@@ -34,14 +34,14 @@ app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-app.get('/docs/logout', docsLogout);
+app.get('/logout', docsLogout);
 
 app.get('/openapi.json', docsAuth, (_req, res) => {
   res.json(openapiSpec);
 });
 
 app.use(
-  '/docs',
+  '/',
   docsAuth,
   helmet({
     contentSecurityPolicy: {
