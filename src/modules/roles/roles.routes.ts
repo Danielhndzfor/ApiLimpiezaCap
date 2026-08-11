@@ -11,7 +11,7 @@ const router = Router();
 
 /**
  * @openapi
- * /roles:
+ * /api/roles:
  *   get:
  *     summary: Lista todos los roles
  *     tags:
@@ -46,7 +46,7 @@ router.post('/', createRoleHandler);
 
 /**
  * @openapi
- * /roles/{id}:
+ * /api/roles/{id}:
  *   get:
  *     summary: Obtiene un rol por Id
  *     tags:

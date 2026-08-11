@@ -1,0 +1,5 @@
+PassengerAppRoot "/home/u261887776/domains/admin.limpiezacap.com.mx/public_html"
+PassengerBaseURI "/"
+PassengerNodejs "/home/u261887776/nodevenv/domains/admin.limpiezacap.com.mx/public_html/22/bin/node"
+PassengerAppType node
+PassengerStartupFile dist/server.js

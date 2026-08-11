@@ -17,7 +17,7 @@ app.use(express.static('public'));
 
 /**
  * @openapi
- * /health:
+ * /api/health:
  *   get:
  *     summary: Verifica el estado del servicio
  *     tags:
@@ -34,7 +34,7 @@ app.use(express.static('public'));
  *                   type: string
  *                   example: ok
  */
-app.get('/health', (_req, res) => {
+app.get('/api/health', (_req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
@@ -44,8 +44,8 @@ app.get('/openapi.json', docsAuth, (_req, res) => {
   res.json(openapiSpec);
 });
 
-app.use('/auth', authRoutes);
-app.use('/roles', rolesRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/roles', rolesRoutes);
 
 app.use(
   '/',

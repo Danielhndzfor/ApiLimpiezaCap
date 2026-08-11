@@ -10,7 +10,7 @@ const router = Router();
 
 /**
  * @openapi
- * /auth/register:
+ * /api/auth/register:
  *   post:
  *     summary: Registra un nuevo usuario
  *     tags:
@@ -39,7 +39,7 @@ router.post('/register', registerHandler);
 
 /**
  * @openapi
- * /auth/login:
+ * /api/auth/login:
  *   post:
  *     summary: Inicia sesión y devuelve access token + refresh token
  *     tags:
@@ -68,7 +68,7 @@ router.post('/login', loginHandler);
 
 /**
  * @openapi
- * /auth/refresh:
+ * /api/auth/refresh:
  *   post:
  *     summary: Genera un nuevo access token a partir de un refresh token válido
  *     tags:
@@ -93,7 +93,7 @@ router.post('/refresh', refreshHandler);
 
 /**
  * @openapi
- * /auth/logout:
+ * /api/auth/logout:
  *   post:
  *     summary: Revoca un refresh token (cierra sesión)
  *     tags:
