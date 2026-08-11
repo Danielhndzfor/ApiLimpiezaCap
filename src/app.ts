@@ -4,12 +4,16 @@ import helmet from 'helmet';
 import { apiReference } from '@scalar/express-api-reference';
 import { openapiSpec } from './docs/swagger';
 import { docsAuth, docsLogout } from './middlewares/docsAuth';
+import { errorHandler } from './middlewares/errorHandler';
+import authRoutes from './modules/auth/auth.routes';
+import rolesRoutes from './modules/roles/roles.routes';
 
 const app: Application = express();
 
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+app.use(express.static('public'));
 
 /**
  * @openapi
@@ -40,6 +44,9 @@ app.get('/openapi.json', docsAuth, (_req, res) => {
   res.json(openapiSpec);
 });
 
+app.use('/auth', authRoutes);
+app.use('/roles', rolesRoutes);
+
 app.use(
   '/',
   docsAuth,
@@ -57,7 +64,10 @@ app.use(
   }),
   apiReference({
     url: '/openapi.json',
+    favicon: '/logo.jpg',
   })
 );
+
+app.use(errorHandler);
 
 export default app;
