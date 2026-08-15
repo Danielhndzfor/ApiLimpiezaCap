@@ -1,7 +1,7 @@
 export interface RegisterInput {
   userName: string;
   password: string;
-  idRole?: number;
+  inviteKey?: string;
 }
 
 export interface LoginInput {

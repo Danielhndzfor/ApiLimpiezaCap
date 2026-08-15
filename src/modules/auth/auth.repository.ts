@@ -7,6 +7,13 @@ interface OutParamsRow extends RowDataPacket {
   status: number;
 }
 
+export async function getRoleIdByName(name: string): Promise<number | null> {
+  const [rows] = await pool.query<RowDataPacket[]>('SELECT IdRole FROM Roles WHERE Name = ? LIMIT 1', [
+    name,
+  ]);
+  return (rows[0]?.IdRole as number | undefined) ?? null;
+}
+
 export async function registerUser(
   userName: string,
   pass: string,
@@ -33,6 +40,10 @@ export async function getUserForLogin(userName: string): Promise<UserForLogin | 
 
 export async function registerLoginAttempt(idUser: number, success: boolean): Promise<void> {
   await pool.query('CALL sp_Users_RegisterLoginAttempt(?, ?)', [idUser, success ? 1 : 0]);
+}
+
+export async function updatePassword(idUser: number, passHash: string): Promise<void> {
+  await pool.query('CALL sp_Users_UpdatePassword(?, ?)', [idUser, passHash]);
 }
 
 export async function getUserByIdForLogin(idUser: number): Promise<UserForLogin | null> {

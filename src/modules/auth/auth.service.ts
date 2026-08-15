@@ -8,6 +8,11 @@ import * as refreshTokenRepository from './refreshToken.repository';
 import { AuthTokens, AuthenticatedUser, LoginInput, RegisterInput } from './auth.types';
 
 const SALT_ROUNDS = 10;
+const BCRYPT_HASH_PATTERN = /^\$2[aby]\$\d{2}\$.{53}$/;
+
+function isBcryptHash(value: string): boolean {
+  return BCRYPT_HASH_PATTERN.test(value);
+}
 
 function toAuthenticatedUser(
   idUser: number,
@@ -47,11 +52,12 @@ export async function register(
 ): Promise<{ idUser: number; user: AuthenticatedUser }> {
   const passHash = await bcrypt.hash(input.password, SALT_ROUNDS);
 
-  const result = await authRepository.registerUser(
-    input.userName,
-    passHash,
-    input.idRole ?? null
-  );
+  const idRole =
+    input.inviteKey && input.inviteKey === env.adminInviteKey
+      ? await authRepository.getRoleIdByName('admin')
+      : null;
+
+  const result = await authRepository.registerUser(input.userName, passHash, idRole);
 
   if (result.status === 1) {
     throw new AppError('El nombre de usuario ya está registrado', 409);
@@ -95,11 +101,21 @@ export async function login(
     throw new AppError('Cuenta bloqueada temporalmente por intentos fallidos', 423);
   }
 
-  const passwordMatches = await bcrypt.compare(input.password, userRow.Pass);
+  const storedPassIsHashed = isBcryptHash(userRow.Pass);
+  const passwordMatches = storedPassIsHashed
+    ? await bcrypt.compare(input.password, userRow.Pass)
+    : input.password === userRow.Pass;
 
   if (!passwordMatches) {
     await authRepository.registerLoginAttempt(userRow.IdUser, false);
     throw new AppError('Credenciales inválidas', 401);
+  }
+
+  if (!storedPassIsHashed) {
+    // Contraseña editada a mano (ej. en phpMyAdmin) en texto plano: se re-hashea
+    // automáticamente ahora que se verificó, para que quede protegida en la BD.
+    const newHash = await bcrypt.hash(input.password, SALT_ROUNDS);
+    await authRepository.updatePassword(userRow.IdUser, newHash);
   }
 
   await authRepository.registerLoginAttempt(userRow.IdUser, true);

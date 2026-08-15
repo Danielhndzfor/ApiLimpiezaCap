@@ -53,7 +53,21 @@ los permisos de cada usuario dentro del sistema.
       { name: 'Health', description: 'Estado del servicio' },
       { name: 'Auth', description: 'Registro, login, refresh y logout de usuarios' },
       { name: 'Roles', description: 'Administración de roles del sistema' },
+      { name: 'Services', description: 'Servicios ofrecidos, mostrados en el sitio público' },
+      { name: 'WorkItems', description: 'Trabajos recientes mostrados en el sitio público' },
+      { name: 'Testimonials', description: 'Testimonios de clientes mostrados en el sitio público' },
+      { name: 'Uploads', description: 'Subida de imágenes' },
+      { name: 'CompanyContent', description: 'Secciones de contenido institucional del sitio público' },
     ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
   },
   apis: ['./src/routes/**/*.ts', './src/modules/**/*.ts', './src/app.ts'],
 };

@@ -7,10 +7,37 @@ import { docsAuth, docsLogout } from './middlewares/docsAuth';
 import { errorHandler } from './middlewares/errorHandler';
 import authRoutes from './modules/auth/auth.routes';
 import rolesRoutes from './modules/roles/roles.routes';
+import servicesRoutes from './modules/services/services.routes';
+import workItemsRoutes from './modules/workitems/workitems.routes';
+import testimonialsRoutes from './modules/testimonials/testimonials.routes';
+import uploadsRoutes from './modules/uploads/uploads.routes';
+import advantagesRoutes from './modules/advantages/advantages.routes';
+import trainingsRoutes from './modules/trainings/trainings.routes';
+import equipmentRoutes from './modules/equipment/equipment.routes';
+import securityMeasuresRoutes from './modules/securityMeasures/securityMeasures.routes';
+import supervisionRoutes from './modules/supervision/supervision.routes';
+import coverageRoutes from './modules/coverage/coverage.routes';
+import companyProductsRoutes from './modules/companyProducts/companyProducts.routes';
+import missionRoutes from './modules/mission/mission.routes';
+import visionRoutes from './modules/vision/vision.routes';
+import companyValuesRoutes from './modules/companyValues/companyValues.routes';
+import milestonesRoutes from './modules/milestones/milestones.routes';
+import companyStatsRoutes from './modules/companyStats/companyStats.routes';
+import homeHeroRoutes from './modules/homeHero/homeHero.routes';
+import aboutHeroRoutes from './modules/aboutHero/aboutHero.routes';
+import jobsRoutes from './modules/jobs/jobs.routes';
+import navLinksRoutes from './modules/navLinks/navLinks.routes';
+import contactInfoRoutes from './modules/contactInfo/contactInfo.routes';
+import faqItemsRoutes from './modules/faqItems/faqItems.routes';
+import contactPageRoutes from './modules/contactPage/contactPage.routes';
+import processStepsRoutes from './modules/processSteps/processSteps.routes';
+import servicesPageRoutes from './modules/servicesPage/servicesPage.routes';
+import recentWorkPageRoutes from './modules/recentWorkPage/recentWorkPage.routes';
+import faqPageRoutes from './modules/faqPage/faqPage.routes';
 
 const app: Application = express();
 
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
@@ -46,6 +73,33 @@ app.get('/openapi.json', docsAuth, (_req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/roles', rolesRoutes);
+app.use('/api/services', servicesRoutes);
+app.use('/api/workitems', workItemsRoutes);
+app.use('/api/testimonials', testimonialsRoutes);
+app.use('/api/uploads', uploadsRoutes);
+app.use('/api/advantages', advantagesRoutes);
+app.use('/api/trainings', trainingsRoutes);
+app.use('/api/equipment', equipmentRoutes);
+app.use('/api/security-measures', securityMeasuresRoutes);
+app.use('/api/supervision', supervisionRoutes);
+app.use('/api/coverage', coverageRoutes);
+app.use('/api/company-products', companyProductsRoutes);
+app.use('/api/mission', missionRoutes);
+app.use('/api/vision', visionRoutes);
+app.use('/api/values', companyValuesRoutes);
+app.use('/api/milestones', milestonesRoutes);
+app.use('/api/company-stats', companyStatsRoutes);
+app.use('/api/home-hero', homeHeroRoutes);
+app.use('/api/about-hero', aboutHeroRoutes);
+app.use('/api/jobs', jobsRoutes);
+app.use('/api/nav-links', navLinksRoutes);
+app.use('/api/contact-info', contactInfoRoutes);
+app.use('/api/faq-items', faqItemsRoutes);
+app.use('/api/contact-page', contactPageRoutes);
+app.use('/api/process-steps', processStepsRoutes);
+app.use('/api/services-page', servicesPageRoutes);
+app.use('/api/recent-work-page', recentWorkPageRoutes);
+app.use('/api/faq-page', faqPageRoutes);
 
 app.use(
   '/',

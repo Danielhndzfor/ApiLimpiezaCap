@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { authGuard } from '../../middlewares/authGuard';
 import {
   createRoleHandler,
   deleteRoleHandler,
@@ -42,7 +43,7 @@ const router = Router();
  *         description: El nombre de rol ya existe
  */
 router.get('/', getAllRolesHandler);
-router.post('/', createRoleHandler);
+router.post('/', authGuard, createRoleHandler);
 
 /**
  * @openapi
@@ -106,7 +107,7 @@ router.post('/', createRoleHandler);
  *         description: Rol no encontrado
  */
 router.get('/:id', getRoleByIdHandler);
-router.put('/:id', updateRoleHandler);
-router.delete('/:id', deleteRoleHandler);
+router.put('/:id', authGuard, updateRoleHandler);
+router.delete('/:id', authGuard, deleteRoleHandler);
 
 export default router;

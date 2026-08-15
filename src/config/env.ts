@@ -15,6 +15,7 @@ export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   docsUser: required('DOCS_USER'),
   docsPassword: required('DOCS_PASSWORD'),
+  adminInviteKey: required('ADMIN_INVITE_KEY'),
   db: {
     host: required('DB_HOST'),
     port: Number(process.env.DB_PORT) || 3306,

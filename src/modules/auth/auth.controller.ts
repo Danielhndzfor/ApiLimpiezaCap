@@ -4,13 +4,13 @@ import * as authService from './auth.service';
 
 export async function registerHandler(req: Request, res: Response, next: NextFunction) {
   try {
-    const { userName, password, idRole } = req.body ?? {};
+    const { userName, password, inviteKey } = req.body ?? {};
 
     if (!userName || !password) {
       throw new AppError('userName y password son obligatorios', 400);
     }
 
-    const { idUser, user } = await authService.register({ userName, password, idRole });
+    const { idUser, user } = await authService.register({ userName, password, inviteKey });
 
     res.status(201).json({ idUser, user });
   } catch (error) {
