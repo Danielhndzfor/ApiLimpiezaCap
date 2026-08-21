@@ -17,6 +17,8 @@ export interface HomeHeroRow extends RowDataPacket {
   PhotoUrl: string | null;
   CtaPrimaryLabel: string;
   CtaSecondaryLabel: string;
+  UpdatedByUserId: number | null;
+  UpdatedAt: string;
 }
 
 interface StatusRow extends RowDataPacket {
@@ -44,10 +46,11 @@ export interface HomeHeroInput {
 
 async function callCrud(
   opc: number,
-  input: HomeHeroInput | null
+  input: HomeHeroInput | null,
+  idUser: number | null
 ): Promise<{ status: number; rows: HomeHeroRow[] }> {
   const [result] = await pool.query<RowDataPacket[][]>(
-    'CALL sp_HomeHero_CRUD(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @pStatus)',
+    'CALL sp_HomeHero_CRUD(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @pStatus)',
     [
       opc,
       input?.eyebrow ?? null,
@@ -64,6 +67,7 @@ async function callCrud(
       input?.photoUrl ?? null,
       input?.ctaPrimaryLabel ?? null,
       input?.ctaSecondaryLabel ?? null,
+      idUser,
     ]
   );
   const [statusRows] = await pool.query<StatusRow[]>('SELECT @pStatus AS status');
@@ -75,9 +79,9 @@ async function callCrud(
 }
 
 export async function getHomeHero() {
-  return callCrud(OPC.SELECT, null);
+  return callCrud(OPC.SELECT, null, null);
 }
 
-export async function updateHomeHero(input: HomeHeroInput) {
-  return callCrud(OPC.UPDATE, input);
+export async function updateHomeHero(input: HomeHeroInput, idUser: number) {
+  return callCrud(OPC.UPDATE, input, idUser);
 }

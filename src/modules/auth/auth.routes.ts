@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { loginRateLimiter, registerRateLimiter } from '../../middlewares/authRateLimit';
 import {
   loginHandler,
   logoutHandler,
@@ -35,7 +36,7 @@ const router = Router();
  *       409:
  *         description: El nombre de usuario ya está registrado
  */
-router.post('/register', registerHandler);
+router.post('/register', registerRateLimiter, registerHandler);
 
 /**
  * @openapi
@@ -64,7 +65,7 @@ router.post('/register', registerHandler);
  *       423:
  *         description: Cuenta bloqueada temporalmente
  */
-router.post('/login', loginHandler);
+router.post('/login', loginRateLimiter, loginHandler);
 
 /**
  * @openapi
@@ -89,7 +90,7 @@ router.post('/login', loginHandler);
  *       401:
  *         description: Refresh token inválido, expirado o revocado
  */
-router.post('/refresh', refreshHandler);
+router.post('/refresh', loginRateLimiter, refreshHandler);
 
 /**
  * @openapi

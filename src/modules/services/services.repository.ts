@@ -12,6 +12,8 @@ export interface ServiceRow extends RowDataPacket {
   LongDescription: string;
   Includes: string[] | string;
   IdealFor: string;
+  UpdatedByUserId: number | null;
+  UpdatedAt: string;
 }
 
 interface StatusRow extends RowDataPacket {
@@ -43,10 +45,11 @@ async function callCrud(
   opc: number,
   idService: number | null,
   slug: string | null,
-  input: ServiceInput | null
+  input: ServiceInput | null,
+  idUser: number | null
 ): Promise<{ status: number; rows: ServiceRow[] }> {
   const [result] = await pool.query<RowDataPacket[][]>(
-    'CALL sp_Services_CRUD(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @pStatus)',
+    'CALL sp_Services_CRUD(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @pStatus)',
     [
       opc,
       idService,
@@ -59,6 +62,7 @@ async function callCrud(
       input?.longDescription ?? null,
       input ? JSON.stringify(input.includes) : null,
       input?.idealFor ?? null,
+      idUser,
     ]
   );
   const [statusRows] = await pool.query<StatusRow[]>('SELECT @pStatus AS status');
@@ -76,26 +80,26 @@ function normalizeRow(row: ServiceRow): ServiceRow {
   return row;
 }
 
-export async function createService(input: ServiceInput) {
-  return callCrud(OPC.INSERT, null, null, input);
+export async function createService(input: ServiceInput, idUser: number) {
+  return callCrud(OPC.INSERT, null, null, input, idUser);
 }
 
-export async function updateService(idService: number, input: ServiceInput) {
-  return callCrud(OPC.UPDATE, idService, null, input);
+export async function updateService(idService: number, input: ServiceInput, idUser: number) {
+  return callCrud(OPC.UPDATE, idService, null, input, idUser);
 }
 
 export async function deleteService(idService: number) {
-  return callCrud(OPC.DELETE, idService, null, null);
+  return callCrud(OPC.DELETE, idService, null, null, null);
 }
 
 export async function getAllServices() {
-  return callCrud(OPC.SELECT_ALL, null, null, null);
+  return callCrud(OPC.SELECT_ALL, null, null, null, null);
 }
 
 export async function getServiceById(idService: number) {
-  return callCrud(OPC.SELECT_BY_ID, idService, null, null);
+  return callCrud(OPC.SELECT_BY_ID, idService, null, null, null);
 }
 
 export async function getServiceBySlug(slug: string) {
-  return callCrud(OPC.SELECT_BY_SLUG, null, slug, null);
+  return callCrud(OPC.SELECT_BY_SLUG, null, slug, null, null);
 }

@@ -6,6 +6,8 @@ export interface WorkItemRow extends RowDataPacket {
   Tag: string;
   Title: string;
   ImageUrl: string | null;
+  UpdatedByUserId: number | null;
+  UpdatedAt: string;
 }
 
 interface StatusRow extends RowDataPacket {
@@ -29,11 +31,12 @@ export interface WorkItemInput {
 async function callCrud(
   opc: number,
   idWorkItem: number | null,
-  input: WorkItemInput | null
+  input: WorkItemInput | null,
+  idUser: number | null
 ): Promise<{ status: number; rows: WorkItemRow[] }> {
   const [result] = await pool.query<RowDataPacket[][]>(
-    'CALL sp_WorkItems_CRUD(?, ?, ?, ?, ?, @pStatus)',
-    [opc, idWorkItem, input?.tag ?? null, input?.title ?? null, input?.imageUrl ?? null]
+    'CALL sp_WorkItems_CRUD(?, ?, ?, ?, ?, ?, @pStatus)',
+    [opc, idWorkItem, input?.tag ?? null, input?.title ?? null, input?.imageUrl ?? null, idUser]
   );
   const [statusRows] = await pool.query<StatusRow[]>('SELECT @pStatus AS status');
 
@@ -43,22 +46,22 @@ async function callCrud(
   return { status: statusRows[0].status, rows };
 }
 
-export async function createWorkItem(input: WorkItemInput) {
-  return callCrud(OPC.INSERT, null, input);
+export async function createWorkItem(input: WorkItemInput, idUser: number) {
+  return callCrud(OPC.INSERT, null, input, idUser);
 }
 
-export async function updateWorkItem(idWorkItem: number, input: WorkItemInput) {
-  return callCrud(OPC.UPDATE, idWorkItem, input);
+export async function updateWorkItem(idWorkItem: number, input: WorkItemInput, idUser: number) {
+  return callCrud(OPC.UPDATE, idWorkItem, input, idUser);
 }
 
 export async function deleteWorkItem(idWorkItem: number) {
-  return callCrud(OPC.DELETE, idWorkItem, null);
+  return callCrud(OPC.DELETE, idWorkItem, null, null);
 }
 
 export async function getAllWorkItems() {
-  return callCrud(OPC.SELECT_ALL, null, null);
+  return callCrud(OPC.SELECT_ALL, null, null, null);
 }
 
 export async function getWorkItemById(idWorkItem: number) {
-  return callCrud(OPC.SELECT_BY_ID, idWorkItem, null);
+  return callCrud(OPC.SELECT_BY_ID, idWorkItem, null, null);
 }

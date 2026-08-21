@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AppError } from '../../utils/AppError';
+import { AuthenticatedRequest } from '../../middlewares/authGuard';
 import * as testimonialsRepository from './testimonials.repository';
 import { TestimonialInput } from './testimonials.repository';
 
@@ -22,10 +23,10 @@ function parseInput(body: Record<string, unknown>): TestimonialInput {
   return { quote: String(quote), name: String(name), source: String(source) };
 }
 
-export async function createTestimonialHandler(req: Request, res: Response, next: NextFunction) {
+export async function createTestimonialHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const input = parseInput(req.body);
-    const { status } = await testimonialsRepository.createTestimonial(input);
+    const { status } = await testimonialsRepository.createTestimonial(input, req.user!.idUser);
     handleStatus(status);
     res.status(201).json({ message: 'Testimonio creado correctamente' });
   } catch (error) {
@@ -33,11 +34,11 @@ export async function createTestimonialHandler(req: Request, res: Response, next
   }
 }
 
-export async function updateTestimonialHandler(req: Request, res: Response, next: NextFunction) {
+export async function updateTestimonialHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const idTestimonial = Number(req.params.id);
     const input = parseInput(req.body);
-    const { status } = await testimonialsRepository.updateTestimonial(idTestimonial, input);
+    const { status } = await testimonialsRepository.updateTestimonial(idTestimonial, input, req.user!.idUser);
     handleStatus(status);
     res.status(200).json({ message: 'Testimonio actualizado correctamente' });
   } catch (error) {

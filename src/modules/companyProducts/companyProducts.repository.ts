@@ -4,6 +4,8 @@ import { pool } from '../../config/db';
 export interface CompanyProductsRow extends RowDataPacket {
   IdCompanyProducts: number;
   Body: string;
+  UpdatedByUserId: number | null;
+  UpdatedAt: string;
 }
 
 interface StatusRow extends RowDataPacket {
@@ -14,11 +16,12 @@ const OPC = { UPDATE: 1, SELECT: 4 } as const;
 
 async function callCrud(
   opc: number,
-  body: string | null
+  body: string | null,
+  idUser: number | null
 ): Promise<{ status: number; rows: CompanyProductsRow[] }> {
   const [result] = await pool.query<RowDataPacket[][]>(
-    'CALL sp_CompanyProducts_CRUD(?, ?, @pStatus)',
-    [opc, body]
+    'CALL sp_CompanyProducts_CRUD(?, ?, ?, @pStatus)',
+    [opc, body, idUser]
   );
   const [statusRows] = await pool.query<StatusRow[]>('SELECT @pStatus AS status');
 
@@ -29,9 +32,9 @@ async function callCrud(
 }
 
 export async function getCompanyProducts() {
-  return callCrud(OPC.SELECT, null);
+  return callCrud(OPC.SELECT, null, null);
 }
 
-export async function updateCompanyProducts(body: string) {
-  return callCrud(OPC.UPDATE, body);
+export async function updateCompanyProducts(body: string, idUser: number) {
+  return callCrud(OPC.UPDATE, body, idUser);
 }

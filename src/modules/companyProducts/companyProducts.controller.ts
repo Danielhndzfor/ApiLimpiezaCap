@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AppError } from '../../utils/AppError';
+import { AuthenticatedRequest } from '../../middlewares/authGuard';
 import * as companyProductsRepository from './companyProducts.repository';
 
 function handleStatus(status: number): void {
@@ -16,11 +17,11 @@ export async function getCompanyProductsHandler(req: Request, res: Response, nex
   }
 }
 
-export async function updateCompanyProductsHandler(req: Request, res: Response, next: NextFunction) {
+export async function updateCompanyProductsHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const { body } = req.body ?? {};
     if (!body) throw new AppError('body es obligatorio', 400);
-    const { status } = await companyProductsRepository.updateCompanyProducts(String(body));
+    const { status } = await companyProductsRepository.updateCompanyProducts(String(body), req.user!.idUser);
     handleStatus(status);
     res.status(200).json({ message: 'Actualizado correctamente' });
   } catch (error) {

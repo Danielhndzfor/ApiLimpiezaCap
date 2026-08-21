@@ -5,6 +5,8 @@ export interface CompanyValueRow extends RowDataPacket {
   IdValue: number;
   Icon: string;
   Title: string;
+  UpdatedByUserId: number | null;
+  UpdatedAt: string;
 }
 
 interface StatusRow extends RowDataPacket {
@@ -21,11 +23,12 @@ export interface CompanyValueInput {
 async function callCrud(
   opc: number,
   idValue: number | null,
-  input: CompanyValueInput | null
+  input: CompanyValueInput | null,
+  idUser: number | null
 ): Promise<{ status: number; rows: CompanyValueRow[] }> {
   const [result] = await pool.query<RowDataPacket[][]>(
-    'CALL sp_CompanyValues_CRUD(?, ?, ?, ?, @pStatus)',
-    [opc, idValue, input?.icon ?? null, input?.title ?? null]
+    'CALL sp_CompanyValues_CRUD(?, ?, ?, ?, ?, @pStatus)',
+    [opc, idValue, input?.icon ?? null, input?.title ?? null, idUser]
   );
   const [statusRows] = await pool.query<StatusRow[]>('SELECT @pStatus AS status');
 
@@ -35,18 +38,18 @@ async function callCrud(
   return { status: statusRows[0].status, rows };
 }
 
-export async function createCompanyValue(input: CompanyValueInput) {
-  return callCrud(OPC.INSERT, null, input);
+export async function createCompanyValue(input: CompanyValueInput, idUser: number) {
+  return callCrud(OPC.INSERT, null, input, idUser);
 }
 
-export async function updateCompanyValue(idValue: number, input: CompanyValueInput) {
-  return callCrud(OPC.UPDATE, idValue, input);
+export async function updateCompanyValue(idValue: number, input: CompanyValueInput, idUser: number) {
+  return callCrud(OPC.UPDATE, idValue, input, idUser);
 }
 
 export async function deleteCompanyValue(idValue: number) {
-  return callCrud(OPC.DELETE, idValue, null);
+  return callCrud(OPC.DELETE, idValue, null, null);
 }
 
 export async function getAllCompanyValues() {
-  return callCrud(OPC.SELECT_ALL, null, null);
+  return callCrud(OPC.SELECT_ALL, null, null, null);
 }

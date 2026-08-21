@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AppError } from '../../utils/AppError';
+import { AuthenticatedRequest } from '../../middlewares/authGuard';
 import * as contactInfoRepository from './contactInfo.repository';
 import { ContactInfoInput } from './contactInfo.repository';
 
@@ -35,10 +36,10 @@ export async function getContactInfoHandler(req: Request, res: Response, next: N
   }
 }
 
-export async function updateContactInfoHandler(req: Request, res: Response, next: NextFunction) {
+export async function updateContactInfoHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const input = parseInput(req.body);
-    const { status } = await contactInfoRepository.updateContactInfo(input);
+    const { status } = await contactInfoRepository.updateContactInfo(input, req.user!.idUser);
     handleStatus(status);
     res.status(200).json({ message: 'Actualizado correctamente' });
   } catch (error) {

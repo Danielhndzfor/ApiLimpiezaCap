@@ -6,6 +6,8 @@ export interface RecentWorkPageRow extends RowDataPacket {
   HeroEyebrow: string;
   HeroTitle: string;
   HeroLead: string;
+  UpdatedByUserId: number | null;
+  UpdatedAt: string;
 }
 
 interface StatusRow extends RowDataPacket {
@@ -22,11 +24,12 @@ export interface RecentWorkPageInput {
 
 async function callCrud(
   opc: number,
-  input: RecentWorkPageInput | null
+  input: RecentWorkPageInput | null,
+  idUser: number | null
 ): Promise<{ status: number; rows: RecentWorkPageRow[] }> {
   const [result] = await pool.query<RowDataPacket[][]>(
-    'CALL sp_RecentWorkPage_CRUD(?, ?, ?, ?, @pStatus)',
-    [opc, input?.heroEyebrow ?? null, input?.heroTitle ?? null, input?.heroLead ?? null]
+    'CALL sp_RecentWorkPage_CRUD(?, ?, ?, ?, ?, @pStatus)',
+    [opc, input?.heroEyebrow ?? null, input?.heroTitle ?? null, input?.heroLead ?? null, idUser]
   );
   const [statusRows] = await pool.query<StatusRow[]>('SELECT @pStatus AS status');
 
@@ -37,9 +40,9 @@ async function callCrud(
 }
 
 export async function getRecentWorkPage() {
-  return callCrud(OPC.SELECT, null);
+  return callCrud(OPC.SELECT, null, null);
 }
 
-export async function updateRecentWorkPage(input: RecentWorkPageInput) {
-  return callCrud(OPC.UPDATE, input);
+export async function updateRecentWorkPage(input: RecentWorkPageInput, idUser: number) {
+  return callCrud(OPC.UPDATE, input, idUser);
 }

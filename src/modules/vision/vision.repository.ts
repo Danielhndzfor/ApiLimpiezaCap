@@ -4,6 +4,8 @@ import { pool } from '../../config/db';
 export interface VisionRow extends RowDataPacket {
   IdVision: number;
   Body: string;
+  UpdatedByUserId: number | null;
+  UpdatedAt: string;
 }
 
 interface StatusRow extends RowDataPacket {
@@ -12,8 +14,16 @@ interface StatusRow extends RowDataPacket {
 
 const OPC = { UPDATE: 1, SELECT: 4 } as const;
 
-async function callCrud(opc: number, body: string | null): Promise<{ status: number; rows: VisionRow[] }> {
-  const [result] = await pool.query<RowDataPacket[][]>('CALL sp_Vision_CRUD(?, ?, @pStatus)', [opc, body]);
+async function callCrud(
+  opc: number,
+  body: string | null,
+  idUser: number | null
+): Promise<{ status: number; rows: VisionRow[] }> {
+  const [result] = await pool.query<RowDataPacket[][]>('CALL sp_Vision_CRUD(?, ?, ?, @pStatus)', [
+    opc,
+    body,
+    idUser,
+  ]);
   const [statusRows] = await pool.query<StatusRow[]>('SELECT @pStatus AS status');
 
   const hasResultSet = Array.isArray(result) && Array.isArray(result[0]);
@@ -23,9 +33,9 @@ async function callCrud(opc: number, body: string | null): Promise<{ status: num
 }
 
 export async function getVision() {
-  return callCrud(OPC.SELECT, null);
+  return callCrud(OPC.SELECT, null, null);
 }
 
-export async function updateVision(body: string) {
-  return callCrud(OPC.UPDATE, body);
+export async function updateVision(body: string, idUser: number) {
+  return callCrud(OPC.UPDATE, body, idUser);
 }

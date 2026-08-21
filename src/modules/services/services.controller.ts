@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AppError } from '../../utils/AppError';
+import { AuthenticatedRequest } from '../../middlewares/authGuard';
 import * as servicesRepository from './services.repository';
 import { ServiceInput } from './services.repository';
 
@@ -49,10 +50,10 @@ function parseInput(body: Record<string, unknown>): ServiceInput {
   };
 }
 
-export async function createServiceHandler(req: Request, res: Response, next: NextFunction) {
+export async function createServiceHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const input = parseInput(req.body);
-    const { status } = await servicesRepository.createService(input);
+    const { status } = await servicesRepository.createService(input, req.user!.idUser);
     handleStatus(status);
     res.status(201).json({ message: 'Servicio creado correctamente' });
   } catch (error) {
@@ -60,11 +61,11 @@ export async function createServiceHandler(req: Request, res: Response, next: Ne
   }
 }
 
-export async function updateServiceHandler(req: Request, res: Response, next: NextFunction) {
+export async function updateServiceHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const idService = Number(req.params.id);
     const input = parseInput(req.body);
-    const { status } = await servicesRepository.updateService(idService, input);
+    const { status } = await servicesRepository.updateService(idService, input, req.user!.idUser);
     handleStatus(status);
     res.status(200).json({ message: 'Servicio actualizado correctamente' });
   } catch (error) {

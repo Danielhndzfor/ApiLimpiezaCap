@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AppError } from '../../utils/AppError';
+import { AuthenticatedRequest } from '../../middlewares/authGuard';
 import * as jobsRepository from './jobs.repository';
 import { JobInput } from './jobs.repository';
 
@@ -25,10 +26,10 @@ function parseInput(body: Record<string, unknown>): JobInput {
   };
 }
 
-export async function createJobHandler(req: Request, res: Response, next: NextFunction) {
+export async function createJobHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const input = parseInput(req.body);
-    const { status } = await jobsRepository.createJob(input);
+    const { status } = await jobsRepository.createJob(input, req.user!.idUser);
     handleStatus(status);
     res.status(201).json({ message: 'Vacante creada correctamente' });
   } catch (error) {
@@ -36,11 +37,11 @@ export async function createJobHandler(req: Request, res: Response, next: NextFu
   }
 }
 
-export async function updateJobHandler(req: Request, res: Response, next: NextFunction) {
+export async function updateJobHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const idJob = Number(req.params.id);
     const input = parseInput(req.body);
-    const { status } = await jobsRepository.updateJob(idJob, input);
+    const { status } = await jobsRepository.updateJob(idJob, input, req.user!.idUser);
     handleStatus(status);
     res.status(200).json({ message: 'Vacante actualizada correctamente' });
   } catch (error) {

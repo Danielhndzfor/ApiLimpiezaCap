@@ -4,6 +4,8 @@ import { pool } from '../../config/db';
 export interface CoverageRow extends RowDataPacket {
   IdCoverage: number;
   Body: string;
+  UpdatedByUserId: number | null;
+  UpdatedAt: string;
 }
 
 interface StatusRow extends RowDataPacket {
@@ -14,11 +16,13 @@ const OPC = { UPDATE: 1, SELECT: 4 } as const;
 
 async function callCrud(
   opc: number,
-  body: string | null
+  body: string | null,
+  idUser: number | null
 ): Promise<{ status: number; rows: CoverageRow[] }> {
-  const [result] = await pool.query<RowDataPacket[][]>('CALL sp_Coverage_CRUD(?, ?, @pStatus)', [
+  const [result] = await pool.query<RowDataPacket[][]>('CALL sp_Coverage_CRUD(?, ?, ?, @pStatus)', [
     opc,
     body,
+    idUser,
   ]);
   const [statusRows] = await pool.query<StatusRow[]>('SELECT @pStatus AS status');
 
@@ -29,9 +33,9 @@ async function callCrud(
 }
 
 export async function getCoverage() {
-  return callCrud(OPC.SELECT, null);
+  return callCrud(OPC.SELECT, null, null);
 }
 
-export async function updateCoverage(body: string) {
-  return callCrud(OPC.UPDATE, body);
+export async function updateCoverage(body: string, idUser: number) {
+  return callCrud(OPC.UPDATE, body, idUser);
 }

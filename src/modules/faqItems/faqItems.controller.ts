@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AppError } from '../../utils/AppError';
+import { AuthenticatedRequest } from '../../middlewares/authGuard';
 import * as faqItemsRepository from './faqItems.repository';
 import { FaqItemInput } from './faqItems.repository';
 
@@ -14,9 +15,9 @@ function parseInput(body: Record<string, unknown>): FaqItemInput {
   return { question: String(question), answer: String(answer) };
 }
 
-export async function createFaqItemHandler(req: Request, res: Response, next: NextFunction) {
+export async function createFaqItemHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    const { status } = await faqItemsRepository.createFaqItem(parseInput(req.body));
+    const { status } = await faqItemsRepository.createFaqItem(parseInput(req.body), req.user!.idUser);
     handleStatus(status);
     res.status(201).json({ message: 'Creado correctamente' });
   } catch (error) {
@@ -24,10 +25,10 @@ export async function createFaqItemHandler(req: Request, res: Response, next: Ne
   }
 }
 
-export async function updateFaqItemHandler(req: Request, res: Response, next: NextFunction) {
+export async function updateFaqItemHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const id = Number(req.params.id);
-    const { status } = await faqItemsRepository.updateFaqItem(id, parseInput(req.body));
+    const { status } = await faqItemsRepository.updateFaqItem(id, parseInput(req.body), req.user!.idUser);
     handleStatus(status);
     res.status(200).json({ message: 'Actualizado correctamente' });
   } catch (error) {

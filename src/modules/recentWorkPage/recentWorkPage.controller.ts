@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AppError } from '../../utils/AppError';
+import { AuthenticatedRequest } from '../../middlewares/authGuard';
 import * as recentWorkPageRepository from './recentWorkPage.repository';
 import { RecentWorkPageInput } from './recentWorkPage.repository';
 
@@ -31,10 +32,10 @@ export async function getRecentWorkPageHandler(req: Request, res: Response, next
   }
 }
 
-export async function updateRecentWorkPageHandler(req: Request, res: Response, next: NextFunction) {
+export async function updateRecentWorkPageHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const input = parseInput(req.body);
-    const { status } = await recentWorkPageRepository.updateRecentWorkPage(input);
+    const { status } = await recentWorkPageRepository.updateRecentWorkPage(input, req.user!.idUser);
     handleStatus(status);
     res.status(200).json({ message: 'Actualizado correctamente' });
   } catch (error) {

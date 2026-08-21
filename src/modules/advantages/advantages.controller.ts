@@ -1,5 +1,6 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Response } from 'express';
 import { AppError } from '../../utils/AppError';
+import { AuthenticatedRequest } from '../../middlewares/authGuard';
 import * as advantagesRepository from './advantages.repository';
 
 function handleStatus(status: number): void {
@@ -13,9 +14,9 @@ function parseText(body: Record<string, unknown>): string {
   return String(text);
 }
 
-export async function createAdvantageHandler(req: Request, res: Response, next: NextFunction) {
+export async function createAdvantageHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    const { status } = await advantagesRepository.createAdvantage(parseText(req.body));
+    const { status } = await advantagesRepository.createAdvantage(parseText(req.body), req.user!.idUser);
     handleStatus(status);
     res.status(201).json({ message: 'Creado correctamente' });
   } catch (error) {
@@ -23,10 +24,10 @@ export async function createAdvantageHandler(req: Request, res: Response, next: 
   }
 }
 
-export async function updateAdvantageHandler(req: Request, res: Response, next: NextFunction) {
+export async function updateAdvantageHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const id = Number(req.params.id);
-    const { status } = await advantagesRepository.updateAdvantage(id, parseText(req.body));
+    const { status } = await advantagesRepository.updateAdvantage(id, parseText(req.body), req.user!.idUser);
     handleStatus(status);
     res.status(200).json({ message: 'Actualizado correctamente' });
   } catch (error) {
@@ -34,7 +35,7 @@ export async function updateAdvantageHandler(req: Request, res: Response, next: 
   }
 }
 
-export async function deleteAdvantageHandler(req: Request, res: Response, next: NextFunction) {
+export async function deleteAdvantageHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const id = Number(req.params.id);
     const { status } = await advantagesRepository.deleteAdvantage(id);
@@ -45,7 +46,7 @@ export async function deleteAdvantageHandler(req: Request, res: Response, next: 
   }
 }
 
-export async function getAllAdvantagesHandler(req: Request, res: Response, next: NextFunction) {
+export async function getAllAdvantagesHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const { rows } = await advantagesRepository.getAllAdvantages();
     res.status(200).json(rows);

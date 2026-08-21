@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AppError } from '../../utils/AppError';
+import { AuthenticatedRequest } from '../../middlewares/authGuard';
 import * as processStepsRepository from './processSteps.repository';
 import { ProcessStepInput } from './processSteps.repository';
 
@@ -16,9 +17,9 @@ function parseInput(body: Record<string, unknown>): ProcessStepInput {
   return { n: String(n), title: String(title), description: String(description) };
 }
 
-export async function createProcessStepHandler(req: Request, res: Response, next: NextFunction) {
+export async function createProcessStepHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    const { status } = await processStepsRepository.createProcessStep(parseInput(req.body));
+    const { status } = await processStepsRepository.createProcessStep(parseInput(req.body), req.user!.idUser);
     handleStatus(status);
     res.status(201).json({ message: 'Creado correctamente' });
   } catch (error) {
@@ -26,10 +27,10 @@ export async function createProcessStepHandler(req: Request, res: Response, next
   }
 }
 
-export async function updateProcessStepHandler(req: Request, res: Response, next: NextFunction) {
+export async function updateProcessStepHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const id = Number(req.params.id);
-    const { status } = await processStepsRepository.updateProcessStep(id, parseInput(req.body));
+    const { status } = await processStepsRepository.updateProcessStep(id, parseInput(req.body), req.user!.idUser);
     handleStatus(status);
     res.status(200).json({ message: 'Actualizado correctamente' });
   } catch (error) {

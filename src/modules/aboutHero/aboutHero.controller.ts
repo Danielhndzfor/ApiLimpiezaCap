@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AppError } from '../../utils/AppError';
+import { AuthenticatedRequest } from '../../middlewares/authGuard';
 import * as aboutHeroRepository from './aboutHero.repository';
 import { AboutHeroInput } from './aboutHero.repository';
 
@@ -68,10 +69,10 @@ export async function getAboutHeroHandler(req: Request, res: Response, next: Nex
   }
 }
 
-export async function updateAboutHeroHandler(req: Request, res: Response, next: NextFunction) {
+export async function updateAboutHeroHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const input = parseInput(req.body);
-    const { status } = await aboutHeroRepository.updateAboutHero(input);
+    const { status } = await aboutHeroRepository.updateAboutHero(input, req.user!.idUser);
     handleStatus(status);
     res.status(200).json({ message: 'Actualizado correctamente' });
   } catch (error) {

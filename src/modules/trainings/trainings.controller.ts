@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AppError } from '../../utils/AppError';
+import { AuthenticatedRequest } from '../../middlewares/authGuard';
 import * as trainingsRepository from './trainings.repository';
 
 function handleStatus(status: number): void {
@@ -13,9 +14,9 @@ function parseText(body: Record<string, unknown>): string {
   return String(text);
 }
 
-export async function createTrainingHandler(req: Request, res: Response, next: NextFunction) {
+export async function createTrainingHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    const { status } = await trainingsRepository.createTraining(parseText(req.body));
+    const { status } = await trainingsRepository.createTraining(parseText(req.body), req.user!.idUser);
     handleStatus(status);
     res.status(201).json({ message: 'Creado correctamente' });
   } catch (error) {
@@ -23,10 +24,10 @@ export async function createTrainingHandler(req: Request, res: Response, next: N
   }
 }
 
-export async function updateTrainingHandler(req: Request, res: Response, next: NextFunction) {
+export async function updateTrainingHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const id = Number(req.params.id);
-    const { status } = await trainingsRepository.updateTraining(id, parseText(req.body));
+    const { status } = await trainingsRepository.updateTraining(id, parseText(req.body), req.user!.idUser);
     handleStatus(status);
     res.status(200).json({ message: 'Actualizado correctamente' });
   } catch (error) {

@@ -10,6 +10,8 @@ export interface ContactInfoRow extends RowDataPacket {
   Address: string;
   Hours: string;
   Tagline: string;
+  UpdatedByUserId: number | null;
+  UpdatedAt: string;
 }
 
 interface StatusRow extends RowDataPacket {
@@ -30,10 +32,11 @@ export interface ContactInfoInput {
 
 async function callCrud(
   opc: number,
-  input: ContactInfoInput | null
+  input: ContactInfoInput | null,
+  idUser: number | null
 ): Promise<{ status: number; rows: ContactInfoRow[] }> {
   const [result] = await pool.query<RowDataPacket[][]>(
-    'CALL sp_ContactInfo_CRUD(?, ?, ?, ?, ?, ?, ?, ?, @pStatus)',
+    'CALL sp_ContactInfo_CRUD(?, ?, ?, ?, ?, ?, ?, ?, ?, @pStatus)',
     [
       opc,
       input?.phoneDisplay ?? null,
@@ -43,6 +46,7 @@ async function callCrud(
       input?.address ?? null,
       input?.hours ?? null,
       input?.tagline ?? null,
+      idUser,
     ]
   );
   const [statusRows] = await pool.query<StatusRow[]>('SELECT @pStatus AS status');
@@ -54,9 +58,9 @@ async function callCrud(
 }
 
 export async function getContactInfo() {
-  return callCrud(OPC.SELECT, null);
+  return callCrud(OPC.SELECT, null, null);
 }
 
-export async function updateContactInfo(input: ContactInfoInput) {
-  return callCrud(OPC.UPDATE, input);
+export async function updateContactInfo(input: ContactInfoInput, idUser: number) {
+  return callCrud(OPC.UPDATE, input, idUser);
 }

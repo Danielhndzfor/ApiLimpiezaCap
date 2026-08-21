@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AppError } from '../../utils/AppError';
+import { AuthenticatedRequest } from '../../middlewares/authGuard';
 import * as milestonesRepository from './milestones.repository';
 import { MilestoneInput } from './milestones.repository';
 
@@ -16,9 +17,9 @@ function parseInput(body: Record<string, unknown>): MilestoneInput {
   return { yearLabel: String(yearLabel), title: String(title), description: String(description) };
 }
 
-export async function createMilestoneHandler(req: Request, res: Response, next: NextFunction) {
+export async function createMilestoneHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    const { status } = await milestonesRepository.createMilestone(parseInput(req.body));
+    const { status } = await milestonesRepository.createMilestone(parseInput(req.body), req.user!.idUser);
     handleStatus(status);
     res.status(201).json({ message: 'Creado correctamente' });
   } catch (error) {
@@ -26,10 +27,10 @@ export async function createMilestoneHandler(req: Request, res: Response, next: 
   }
 }
 
-export async function updateMilestoneHandler(req: Request, res: Response, next: NextFunction) {
+export async function updateMilestoneHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const id = Number(req.params.id);
-    const { status } = await milestonesRepository.updateMilestone(id, parseInput(req.body));
+    const { status } = await milestonesRepository.updateMilestone(id, parseInput(req.body), req.user!.idUser);
     handleStatus(status);
     res.status(200).json({ message: 'Actualizado correctamente' });
   } catch (error) {

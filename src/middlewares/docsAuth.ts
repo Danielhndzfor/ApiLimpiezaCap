@@ -1,15 +1,8 @@
-import { timingSafeEqual } from 'crypto';
 import { NextFunction, Request, Response } from 'express';
 import { env } from '../config/env';
+import { safeEqual } from '../utils/safeEqual';
 
 const REALM = 'Documentacion API';
-
-function safeEqual(a: string, b: string): boolean {
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) return false;
-  return timingSafeEqual(bufA, bufB);
-}
 
 function challenge(res: Response): void {
   res.set('WWW-Authenticate', `Basic realm="${REALM}"`);

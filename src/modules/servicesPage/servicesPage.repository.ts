@@ -7,6 +7,8 @@ export interface ServicesPageRow extends RowDataPacket {
   HeroTitle: string;
   HeroLead: string;
   ProcessTitle: string;
+  UpdatedByUserId: number | null;
+  UpdatedAt: string;
 }
 
 interface StatusRow extends RowDataPacket {
@@ -24,11 +26,12 @@ export interface ServicesPageInput {
 
 async function callCrud(
   opc: number,
-  input: ServicesPageInput | null
+  input: ServicesPageInput | null,
+  idUser: number | null
 ): Promise<{ status: number; rows: ServicesPageRow[] }> {
   const [result] = await pool.query<RowDataPacket[][]>(
-    'CALL sp_ServicesPage_CRUD(?, ?, ?, ?, ?, @pStatus)',
-    [opc, input?.heroEyebrow ?? null, input?.heroTitle ?? null, input?.heroLead ?? null, input?.processTitle ?? null]
+    'CALL sp_ServicesPage_CRUD(?, ?, ?, ?, ?, ?, @pStatus)',
+    [opc, input?.heroEyebrow ?? null, input?.heroTitle ?? null, input?.heroLead ?? null, input?.processTitle ?? null, idUser]
   );
   const [statusRows] = await pool.query<StatusRow[]>('SELECT @pStatus AS status');
 
@@ -39,9 +42,9 @@ async function callCrud(
 }
 
 export async function getServicesPage() {
-  return callCrud(OPC.SELECT, null);
+  return callCrud(OPC.SELECT, null, null);
 }
 
-export async function updateServicesPage(input: ServicesPageInput) {
-  return callCrud(OPC.UPDATE, input);
+export async function updateServicesPage(input: ServicesPageInput, idUser: number) {
+  return callCrud(OPC.UPDATE, input, idUser);
 }

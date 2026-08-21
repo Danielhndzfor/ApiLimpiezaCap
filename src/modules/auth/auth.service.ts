@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { env } from '../../config/env';
 import { AppError } from '../../utils/AppError';
 import { parseDurationToMs } from '../../utils/duration';
+import { safeEqual } from '../../utils/safeEqual';
 import * as authRepository from './auth.repository';
 import * as refreshTokenRepository from './refreshToken.repository';
 import { AuthTokens, AuthenticatedUser, LoginInput, RegisterInput } from './auth.types';
@@ -53,7 +54,7 @@ export async function register(
   const passHash = await bcrypt.hash(input.password, SALT_ROUNDS);
 
   const idRole =
-    input.inviteKey && input.inviteKey === env.adminInviteKey
+    input.inviteKey && safeEqual(input.inviteKey, env.adminInviteKey)
       ? await authRepository.getRoleIdByName('admin')
       : null;
 

@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AppError } from '../../utils/AppError';
+import { AuthenticatedRequest } from '../../middlewares/authGuard';
 import * as companyValuesRepository from './companyValues.repository';
 import { CompanyValueInput } from './companyValues.repository';
 
@@ -14,9 +15,9 @@ function parseInput(body: Record<string, unknown>): CompanyValueInput {
   return { icon: String(icon), title: String(title) };
 }
 
-export async function createCompanyValueHandler(req: Request, res: Response, next: NextFunction) {
+export async function createCompanyValueHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    const { status } = await companyValuesRepository.createCompanyValue(parseInput(req.body));
+    const { status } = await companyValuesRepository.createCompanyValue(parseInput(req.body), req.user!.idUser);
     handleStatus(status);
     res.status(201).json({ message: 'Creado correctamente' });
   } catch (error) {
@@ -24,10 +25,10 @@ export async function createCompanyValueHandler(req: Request, res: Response, nex
   }
 }
 
-export async function updateCompanyValueHandler(req: Request, res: Response, next: NextFunction) {
+export async function updateCompanyValueHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const id = Number(req.params.id);
-    const { status } = await companyValuesRepository.updateCompanyValue(id, parseInput(req.body));
+    const { status } = await companyValuesRepository.updateCompanyValue(id, parseInput(req.body), req.user!.idUser);
     handleStatus(status);
     res.status(200).json({ message: 'Actualizado correctamente' });
   } catch (error) {

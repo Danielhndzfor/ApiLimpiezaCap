@@ -11,6 +11,8 @@ export interface ContactPageRow extends RowDataPacket {
   OfficePhoto1Url: string | null;
   OfficePhoto2Url: string | null;
   OfficePhoto3Url: string | null;
+  UpdatedByUserId: number | null;
+  UpdatedAt: string;
 }
 
 interface StatusRow extends RowDataPacket {
@@ -32,10 +34,11 @@ export interface ContactPageInput {
 
 async function callCrud(
   opc: number,
-  input: ContactPageInput | null
+  input: ContactPageInput | null,
+  idUser: number | null
 ): Promise<{ status: number; rows: ContactPageRow[] }> {
   const [result] = await pool.query<RowDataPacket[][]>(
-    'CALL sp_ContactPage_CRUD(?, ?, ?, ?, ?, ?, ?, ?, ?, @pStatus)',
+    'CALL sp_ContactPage_CRUD(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @pStatus)',
     [
       opc,
       input?.heroEyebrow ?? null,
@@ -46,6 +49,7 @@ async function callCrud(
       input?.officePhoto1Url ?? null,
       input?.officePhoto2Url ?? null,
       input?.officePhoto3Url ?? null,
+      idUser,
     ]
   );
   const [statusRows] = await pool.query<StatusRow[]>('SELECT @pStatus AS status');
@@ -57,9 +61,9 @@ async function callCrud(
 }
 
 export async function getContactPage() {
-  return callCrud(OPC.SELECT, null);
+  return callCrud(OPC.SELECT, null, null);
 }
 
-export async function updateContactPage(input: ContactPageInput) {
-  return callCrud(OPC.UPDATE, input);
+export async function updateContactPage(input: ContactPageInput, idUser: number) {
+  return callCrud(OPC.UPDATE, input, idUser);
 }

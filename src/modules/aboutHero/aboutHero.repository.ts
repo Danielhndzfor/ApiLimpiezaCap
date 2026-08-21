@@ -16,6 +16,8 @@ export interface AboutHeroRow extends RowDataPacket {
   JobsEyebrow: string;
   JobsTitle: string;
   JobsLead: string;
+  UpdatedByUserId: number | null;
+  UpdatedAt: string;
 }
 
 interface StatusRow extends RowDataPacket {
@@ -42,10 +44,11 @@ export interface AboutHeroInput {
 
 async function callCrud(
   opc: number,
-  input: AboutHeroInput | null
+  input: AboutHeroInput | null,
+  idUser: number | null
 ): Promise<{ status: number; rows: AboutHeroRow[] }> {
   const [result] = await pool.query<RowDataPacket[][]>(
-    'CALL sp_AboutHero_CRUD(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @pStatus)',
+    'CALL sp_AboutHero_CRUD(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, @pStatus)',
     [
       opc,
       input?.eyebrow ?? null,
@@ -61,6 +64,7 @@ async function callCrud(
       input?.jobsEyebrow ?? null,
       input?.jobsTitle ?? null,
       input?.jobsLead ?? null,
+      idUser,
     ]
   );
   const [statusRows] = await pool.query<StatusRow[]>('SELECT @pStatus AS status');
@@ -72,9 +76,9 @@ async function callCrud(
 }
 
 export async function getAboutHero() {
-  return callCrud(OPC.SELECT, null);
+  return callCrud(OPC.SELECT, null, null);
 }
 
-export async function updateAboutHero(input: AboutHeroInput) {
-  return callCrud(OPC.UPDATE, input);
+export async function updateAboutHero(input: AboutHeroInput, idUser: number) {
+  return callCrud(OPC.UPDATE, input, idUser);
 }

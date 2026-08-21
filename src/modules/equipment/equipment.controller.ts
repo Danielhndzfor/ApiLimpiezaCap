@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AppError } from '../../utils/AppError';
+import { AuthenticatedRequest } from '../../middlewares/authGuard';
 import * as equipmentRepository from './equipment.repository';
 
 function handleStatus(status: number): void {
@@ -13,9 +14,9 @@ function parseText(body: Record<string, unknown>): string {
   return String(text);
 }
 
-export async function createEquipmentHandler(req: Request, res: Response, next: NextFunction) {
+export async function createEquipmentHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    const { status } = await equipmentRepository.createEquipment(parseText(req.body));
+    const { status } = await equipmentRepository.createEquipment(parseText(req.body), req.user!.idUser);
     handleStatus(status);
     res.status(201).json({ message: 'Creado correctamente' });
   } catch (error) {
@@ -23,10 +24,10 @@ export async function createEquipmentHandler(req: Request, res: Response, next: 
   }
 }
 
-export async function updateEquipmentHandler(req: Request, res: Response, next: NextFunction) {
+export async function updateEquipmentHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const id = Number(req.params.id);
-    const { status } = await equipmentRepository.updateEquipment(id, parseText(req.body));
+    const { status } = await equipmentRepository.updateEquipment(id, parseText(req.body), req.user!.idUser);
     handleStatus(status);
     res.status(200).json({ message: 'Actualizado correctamente' });
   } catch (error) {

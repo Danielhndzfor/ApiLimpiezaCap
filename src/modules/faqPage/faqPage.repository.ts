@@ -7,6 +7,8 @@ export interface FaqPageRow extends RowDataPacket {
   HeroTitle: string;
   BannerText: string;
   BannerButtonLabel: string;
+  UpdatedByUserId: number | null;
+  UpdatedAt: string;
 }
 
 interface StatusRow extends RowDataPacket {
@@ -24,11 +26,12 @@ export interface FaqPageInput {
 
 async function callCrud(
   opc: number,
-  input: FaqPageInput | null
+  input: FaqPageInput | null,
+  idUser: number | null
 ): Promise<{ status: number; rows: FaqPageRow[] }> {
   const [result] = await pool.query<RowDataPacket[][]>(
-    'CALL sp_FaqPage_CRUD(?, ?, ?, ?, ?, @pStatus)',
-    [opc, input?.heroEyebrow ?? null, input?.heroTitle ?? null, input?.bannerText ?? null, input?.bannerButtonLabel ?? null]
+    'CALL sp_FaqPage_CRUD(?, ?, ?, ?, ?, ?, @pStatus)',
+    [opc, input?.heroEyebrow ?? null, input?.heroTitle ?? null, input?.bannerText ?? null, input?.bannerButtonLabel ?? null, idUser]
   );
   const [statusRows] = await pool.query<StatusRow[]>('SELECT @pStatus AS status');
 
@@ -39,9 +42,9 @@ async function callCrud(
 }
 
 export async function getFaqPage() {
-  return callCrud(OPC.SELECT, null);
+  return callCrud(OPC.SELECT, null, null);
 }
 
-export async function updateFaqPage(input: FaqPageInput) {
-  return callCrud(OPC.UPDATE, input);
+export async function updateFaqPage(input: FaqPageInput, idUser: number) {
+  return callCrud(OPC.UPDATE, input, idUser);
 }

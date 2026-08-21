@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AppError } from '../../utils/AppError';
+import { AuthenticatedRequest } from '../../middlewares/authGuard';
 import * as servicesPageRepository from './servicesPage.repository';
 import { ServicesPageInput } from './servicesPage.repository';
 
@@ -32,10 +33,10 @@ export async function getServicesPageHandler(req: Request, res: Response, next: 
   }
 }
 
-export async function updateServicesPageHandler(req: Request, res: Response, next: NextFunction) {
+export async function updateServicesPageHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const input = parseInput(req.body);
-    const { status } = await servicesPageRepository.updateServicesPage(input);
+    const { status } = await servicesPageRepository.updateServicesPage(input, req.user!.idUser);
     handleStatus(status);
     res.status(200).json({ message: 'Actualizado correctamente' });
   } catch (error) {

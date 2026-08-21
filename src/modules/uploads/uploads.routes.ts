@@ -2,12 +2,16 @@ import { Router } from 'express';
 import fs from 'fs';
 import multer from 'multer';
 import path from 'path';
+import sharp from 'sharp';
 import { randomUUID } from 'crypto';
 import { authGuard } from '../../middlewares/authGuard';
 import { AppError } from '../../utils/AppError';
 
 const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
 fs.mkdirSync(uploadsDir, { recursive: true });
+
+const ALLOWED_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp']);
+const ALLOWED_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
 
 // Borra un archivo subido anteriormente cuando se reemplaza o se elimina el
 // registro que lo referenciaba. Solo actúa sobre rutas locales (/uploads/...);
@@ -22,20 +26,24 @@ export function deleteUploadedFile(url: string | null | undefined): void {
   });
 }
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadsDir),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `${randomUUID()}${ext}`);
-  },
-});
+function slugify(input: string): string {
+  const slug = input
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
+  return slug || 'imagen';
+}
 
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    if (!file.mimetype.startsWith('image/')) {
-      cb(new AppError('Solo se permiten archivos de imagen', 400));
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!ALLOWED_MIME_TYPES.has(file.mimetype) || !ALLOWED_EXTENSIONS.has(ext)) {
+      cb(new AppError('Formato no permitido. Solo se aceptan PNG, JPG, JPEG o WEBP.', 400));
       return;
     }
     cb(null, true);
@@ -48,7 +56,7 @@ const router = Router();
  * @openapi
  * /api/uploads:
  *   post:
- *     summary: Sube una imagen y devuelve su URL pública
+ *     summary: Sube una imagen (se convierte a WebP) y devuelve su URL pública
  *     tags:
  *       - Uploads
  *     security:
@@ -67,12 +75,19 @@ const router = Router();
  *       200:
  *         description: Imagen subida correctamente
  */
-router.post('/', authGuard, upload.single('file'), (req, res, next) => {
+router.post('/', authGuard, upload.single('file'), async (req, res, next) => {
   try {
     if (!req.file) {
       throw new AppError('El archivo es obligatorio', 400);
     }
-    res.status(200).json({ url: `/uploads/${req.file.filename}` });
+
+    const baseName = slugify(path.parse(req.file.originalname).name);
+    const uniqueSuffix = randomUUID().slice(0, 8);
+    const filename = `${baseName}-${uniqueSuffix}.webp`;
+
+    await sharp(req.file.buffer).webp({ quality: 82 }).toFile(path.join(uploadsDir, filename));
+
+    res.status(200).json({ url: `/uploads/${filename}` });
   } catch (error) {
     next(error);
   }

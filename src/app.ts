@@ -12,6 +12,7 @@ import workItemsRoutes from './modules/workitems/workitems.routes';
 import testimonialsRoutes from './modules/testimonials/testimonials.routes';
 import uploadsRoutes from './modules/uploads/uploads.routes';
 import advantagesRoutes from './modules/advantages/advantages.routes';
+import marqueeItemsRoutes from './modules/marqueeItems/marqueeItems.routes';
 import trainingsRoutes from './modules/trainings/trainings.routes';
 import equipmentRoutes from './modules/equipment/equipment.routes';
 import securityMeasuresRoutes from './modules/securityMeasures/securityMeasures.routes';
@@ -78,6 +79,7 @@ app.use('/api/workitems', workItemsRoutes);
 app.use('/api/testimonials', testimonialsRoutes);
 app.use('/api/uploads', uploadsRoutes);
 app.use('/api/advantages', advantagesRoutes);
+app.use('/api/marquee-items', marqueeItemsRoutes);
 app.use('/api/trainings', trainingsRoutes);
 app.use('/api/equipment', equipmentRoutes);
 app.use('/api/security-measures', securityMeasuresRoutes);
@@ -100,6 +102,13 @@ app.use('/api/process-steps', processStepsRoutes);
 app.use('/api/services-page', servicesPageRoutes);
 app.use('/api/recent-work-page', recentWorkPageRoutes);
 app.use('/api/faq-page', faqPageRoutes);
+
+// Cualquier ruta /api/* que no haya coincidido con un módulo registrado arriba
+// es un 404 real, no debe caer en el auth de la documentación (que devolvía
+// un 401 confuso "Autenticación requerida" para endpoints simplemente inexistentes).
+app.use('/api', (_req, res) => {
+  res.status(404).json({ message: 'Recurso no encontrado' });
+});
 
 app.use(
   '/',

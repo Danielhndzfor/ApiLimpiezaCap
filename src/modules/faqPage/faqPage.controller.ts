@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AppError } from '../../utils/AppError';
+import { AuthenticatedRequest } from '../../middlewares/authGuard';
 import * as faqPageRepository from './faqPage.repository';
 import { FaqPageInput } from './faqPage.repository';
 
@@ -32,10 +33,10 @@ export async function getFaqPageHandler(req: Request, res: Response, next: NextF
   }
 }
 
-export async function updateFaqPageHandler(req: Request, res: Response, next: NextFunction) {
+export async function updateFaqPageHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const input = parseInput(req.body);
-    const { status } = await faqPageRepository.updateFaqPage(input);
+    const { status } = await faqPageRepository.updateFaqPage(input, req.user!.idUser);
     handleStatus(status);
     res.status(200).json({ message: 'Actualizado correctamente' });
   } catch (error) {

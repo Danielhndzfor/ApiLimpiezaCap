@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AppError } from '../../utils/AppError';
+import { AuthenticatedRequest } from '../../middlewares/authGuard';
 import * as supervisionRepository from './supervision.repository';
 
 function handleStatus(status: number): void {
@@ -16,11 +17,11 @@ export async function getSupervisionHandler(req: Request, res: Response, next: N
   }
 }
 
-export async function updateSupervisionHandler(req: Request, res: Response, next: NextFunction) {
+export async function updateSupervisionHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const { body } = req.body ?? {};
     if (!body) throw new AppError('body es obligatorio', 400);
-    const { status } = await supervisionRepository.updateSupervision(String(body));
+    const { status } = await supervisionRepository.updateSupervision(String(body), req.user!.idUser);
     handleStatus(status);
     res.status(200).json({ message: 'Actualizado correctamente' });
   } catch (error) {

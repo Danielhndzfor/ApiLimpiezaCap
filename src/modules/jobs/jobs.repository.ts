@@ -8,6 +8,8 @@ export interface JobRow extends RowDataPacket {
   Type: string;
   Description: string;
   Requirements: string[] | string;
+  UpdatedByUserId: number | null;
+  UpdatedAt: string;
 }
 
 interface StatusRow extends RowDataPacket {
@@ -35,10 +37,11 @@ async function callCrud(
   opc: number,
   idJob: number | null,
   slug: string | null,
-  input: JobInput | null
+  input: JobInput | null,
+  idUser: number | null
 ): Promise<{ status: number; rows: JobRow[] }> {
   const [result] = await pool.query<RowDataPacket[][]>(
-    'CALL sp_Jobs_CRUD(?, ?, ?, ?, ?, ?, ?, @pStatus)',
+    'CALL sp_Jobs_CRUD(?, ?, ?, ?, ?, ?, ?, ?, @pStatus)',
     [
       opc,
       idJob,
@@ -47,6 +50,7 @@ async function callCrud(
       input?.type ?? null,
       input?.description ?? null,
       input ? JSON.stringify(input.requirements) : null,
+      idUser,
     ]
   );
   const [statusRows] = await pool.query<StatusRow[]>('SELECT @pStatus AS status');
@@ -64,22 +68,22 @@ function normalizeRow(row: JobRow): JobRow {
   return row;
 }
 
-export async function createJob(input: JobInput) {
-  return callCrud(OPC.INSERT, null, null, input);
+export async function createJob(input: JobInput, idUser: number) {
+  return callCrud(OPC.INSERT, null, null, input, idUser);
 }
 
-export async function updateJob(idJob: number, input: JobInput) {
-  return callCrud(OPC.UPDATE, idJob, null, input);
+export async function updateJob(idJob: number, input: JobInput, idUser: number) {
+  return callCrud(OPC.UPDATE, idJob, null, input, idUser);
 }
 
 export async function deleteJob(idJob: number) {
-  return callCrud(OPC.DELETE, idJob, null, null);
+  return callCrud(OPC.DELETE, idJob, null, null, null);
 }
 
 export async function getAllJobs() {
-  return callCrud(OPC.SELECT_ALL, null, null, null);
+  return callCrud(OPC.SELECT_ALL, null, null, null, null);
 }
 
 export async function getJobBySlug(slug: string) {
-  return callCrud(OPC.SELECT_BY_SLUG, null, slug, null);
+  return callCrud(OPC.SELECT_BY_SLUG, null, slug, null, null);
 }

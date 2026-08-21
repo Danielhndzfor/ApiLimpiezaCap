@@ -6,6 +6,8 @@ export interface TestimonialRow extends RowDataPacket {
   Quote: string;
   Name: string;
   Source: string;
+  UpdatedByUserId: number | null;
+  UpdatedAt: string;
 }
 
 interface StatusRow extends RowDataPacket {
@@ -29,11 +31,12 @@ export interface TestimonialInput {
 async function callCrud(
   opc: number,
   idTestimonial: number | null,
-  input: TestimonialInput | null
+  input: TestimonialInput | null,
+  idUser: number | null
 ): Promise<{ status: number; rows: TestimonialRow[] }> {
   const [result] = await pool.query<RowDataPacket[][]>(
-    'CALL sp_Testimonials_CRUD(?, ?, ?, ?, ?, @pStatus)',
-    [opc, idTestimonial, input?.quote ?? null, input?.name ?? null, input?.source ?? null]
+    'CALL sp_Testimonials_CRUD(?, ?, ?, ?, ?, ?, @pStatus)',
+    [opc, idTestimonial, input?.quote ?? null, input?.name ?? null, input?.source ?? null, idUser]
   );
   const [statusRows] = await pool.query<StatusRow[]>('SELECT @pStatus AS status');
 
@@ -43,22 +46,22 @@ async function callCrud(
   return { status: statusRows[0].status, rows };
 }
 
-export async function createTestimonial(input: TestimonialInput) {
-  return callCrud(OPC.INSERT, null, input);
+export async function createTestimonial(input: TestimonialInput, idUser: number) {
+  return callCrud(OPC.INSERT, null, input, idUser);
 }
 
-export async function updateTestimonial(idTestimonial: number, input: TestimonialInput) {
-  return callCrud(OPC.UPDATE, idTestimonial, input);
+export async function updateTestimonial(idTestimonial: number, input: TestimonialInput, idUser: number) {
+  return callCrud(OPC.UPDATE, idTestimonial, input, idUser);
 }
 
 export async function deleteTestimonial(idTestimonial: number) {
-  return callCrud(OPC.DELETE, idTestimonial, null);
+  return callCrud(OPC.DELETE, idTestimonial, null, null);
 }
 
 export async function getAllTestimonials() {
-  return callCrud(OPC.SELECT_ALL, null, null);
+  return callCrud(OPC.SELECT_ALL, null, null, null);
 }
 
 export async function getTestimonialById(idTestimonial: number) {
-  return callCrud(OPC.SELECT_BY_ID, idTestimonial, null);
+  return callCrud(OPC.SELECT_BY_ID, idTestimonial, null, null);
 }

@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { AppError } from '../../utils/AppError';
+import { AuthenticatedRequest } from '../../middlewares/authGuard';
 import { deleteUploadedFile } from '../uploads/uploads.routes';
 import * as workItemsRepository from './workitems.repository';
 import { WorkItemInput } from './workitems.repository';
@@ -27,10 +28,10 @@ function parseInput(body: Record<string, unknown>): WorkItemInput {
   };
 }
 
-export async function createWorkItemHandler(req: Request, res: Response, next: NextFunction) {
+export async function createWorkItemHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const input = parseInput(req.body);
-    const { status } = await workItemsRepository.createWorkItem(input);
+    const { status } = await workItemsRepository.createWorkItem(input, req.user!.idUser);
     handleStatus(status);
     res.status(201).json({ message: 'Trabajo creado correctamente' });
   } catch (error) {
@@ -38,7 +39,7 @@ export async function createWorkItemHandler(req: Request, res: Response, next: N
   }
 }
 
-export async function updateWorkItemHandler(req: Request, res: Response, next: NextFunction) {
+export async function updateWorkItemHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const idWorkItem = Number(req.params.id);
     const input = parseInput(req.body);
@@ -46,7 +47,7 @@ export async function updateWorkItemHandler(req: Request, res: Response, next: N
     const { rows: existingRows } = await workItemsRepository.getWorkItemById(idWorkItem);
     const previousImageUrl = existingRows[0]?.ImageUrl ?? null;
 
-    const { status } = await workItemsRepository.updateWorkItem(idWorkItem, input);
+    const { status } = await workItemsRepository.updateWorkItem(idWorkItem, input, req.user!.idUser);
     handleStatus(status);
 
     if (previousImageUrl && previousImageUrl !== input.imageUrl) {

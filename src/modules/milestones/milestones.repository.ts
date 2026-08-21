@@ -6,6 +6,8 @@ export interface MilestoneRow extends RowDataPacket {
   YearLabel: string;
   Title: string;
   Description: string;
+  UpdatedByUserId: number | null;
+  UpdatedAt: string;
 }
 
 interface StatusRow extends RowDataPacket {
@@ -23,11 +25,12 @@ export interface MilestoneInput {
 async function callCrud(
   opc: number,
   idMilestone: number | null,
-  input: MilestoneInput | null
+  input: MilestoneInput | null,
+  idUser: number | null
 ): Promise<{ status: number; rows: MilestoneRow[] }> {
   const [result] = await pool.query<RowDataPacket[][]>(
-    'CALL sp_Milestones_CRUD(?, ?, ?, ?, ?, @pStatus)',
-    [opc, idMilestone, input?.yearLabel ?? null, input?.title ?? null, input?.description ?? null]
+    'CALL sp_Milestones_CRUD(?, ?, ?, ?, ?, ?, @pStatus)',
+    [opc, idMilestone, input?.yearLabel ?? null, input?.title ?? null, input?.description ?? null, idUser]
   );
   const [statusRows] = await pool.query<StatusRow[]>('SELECT @pStatus AS status');
 
@@ -37,18 +40,18 @@ async function callCrud(
   return { status: statusRows[0].status, rows };
 }
 
-export async function createMilestone(input: MilestoneInput) {
-  return callCrud(OPC.INSERT, null, input);
+export async function createMilestone(input: MilestoneInput, idUser: number) {
+  return callCrud(OPC.INSERT, null, input, idUser);
 }
 
-export async function updateMilestone(idMilestone: number, input: MilestoneInput) {
-  return callCrud(OPC.UPDATE, idMilestone, input);
+export async function updateMilestone(idMilestone: number, input: MilestoneInput, idUser: number) {
+  return callCrud(OPC.UPDATE, idMilestone, input, idUser);
 }
 
 export async function deleteMilestone(idMilestone: number) {
-  return callCrud(OPC.DELETE, idMilestone, null);
+  return callCrud(OPC.DELETE, idMilestone, null, null);
 }
 
 export async function getAllMilestones() {
-  return callCrud(OPC.SELECT_ALL, null, null);
+  return callCrud(OPC.SELECT_ALL, null, null, null);
 }
